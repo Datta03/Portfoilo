@@ -283,23 +283,49 @@ contactForm.addEventListener('submit', (e) => {
 
   if (!isValid) return;
 
-  // Simulate form submission
+  // Submit to Formspree
   formSubmit.textContent = 'Sending...';
   formSubmit.disabled = true;
   formSubmit.style.opacity = '0.7';
 
-  setTimeout(() => {
-    formSuccess.classList.add('show');
-    contactForm.reset();
+  const formData = new FormData(contactForm);
+
+  fetch(contactForm.action, {
+    method: 'POST',
+    body: formData,
+    headers: {
+      'Accept': 'application/json'
+    }
+  }).then(response => {
+    if (response.ok) {
+      formSuccess.classList.add('show');
+      contactForm.reset();
+      formSubmit.textContent = 'Send Message 🚀';
+      formSubmit.disabled = false;
+      formSubmit.style.opacity = '';
+
+      // Hide success after 6 seconds
+      setTimeout(() => {
+        formSuccess.classList.remove('show');
+      }, 6000);
+    } else {
+      response.json().then(data => {
+        if (Object.hasOwn(data, 'errors')) {
+          alert(data["errors"].map(error => error["message"]).join(", "));
+        } else {
+          alert("Oops! There was a problem submitting your form");
+        }
+      });
+      formSubmit.textContent = 'Send Message 🚀';
+      formSubmit.disabled = false;
+      formSubmit.style.opacity = '';
+    }
+  }).catch(error => {
+    alert("Oops! There was a problem submitting your form");
     formSubmit.textContent = 'Send Message 🚀';
     formSubmit.disabled = false;
     formSubmit.style.opacity = '';
-
-    // Hide success after 6 seconds
-    setTimeout(() => {
-      formSuccess.classList.remove('show');
-    }, 6000);
-  }, 1200);
+  });
 });
 
 // ===========================
